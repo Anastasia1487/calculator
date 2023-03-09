@@ -4,8 +4,142 @@ void main() {
   runApp(new MyApp());
 }
 
+
 class MyApp extends StatelessWidget {
-  //const MyApp({super.key});
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
+      home: GridCount(),
+    );
+  }
+}
+class GridCount extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('GridView Demo')),
+      body: Column(
+        children: [
+          Spacer(
+            flex: 4,
+          ),
+          GridView.count(
+            crossAxisCount: 4,
+            crossAxisSpacing: 0,
+            shrinkWrap: true,
+            //padding: EdgeInsets.only(left: 2, right: 2),
+            children: [
+              DialKey(
+                number: '%',
+              ),
+              DialKey(
+                number: 'x^2',
+              ),
+              DialKey(
+                number: 'sqrt(x)',
+              ),
+              DialKey(
+                number: '/',
+              ),
+              DialKey(
+                number: '7',
+              ),
+              DialKey(
+                number: '8',
+              ),
+              DialKey(
+                number: '9',
+              ),
+              DialKey(
+                number: '*',
+              ),
+              DialKey(
+                number: '4',
+              ),
+              DialKey(
+                number: '5',
+              ),
+              DialKey(
+                number: '6',
+              ),
+              DialKey(
+                number: '+',
+              ),
+              DialKey(
+                number: '1',
+              ),
+              DialKey(
+                number: '2',
+              ),
+              DialKey(
+                number: '3',
+              ),
+              DialKey(
+                number: '-',
+              ),
+              DialKey(
+                number: '+/-',
+              ),
+              DialKey(
+                number: '0',
+              ),
+              DialKey(
+                number: ',',
+              ),
+              DialKey(
+                number: '=',
+              ),
+            ],
+          ),
+          Spacer()
+        ],
+      ),
+    );
+  }
+}
+
+class DialKey extends StatelessWidget {
+  final String number;
+
+
+  DialKey({required this.number});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 80,
+        height: 80,
+        child: FloatingActionButton(
+          onPressed: () {},
+          backgroundColor: Colors.grey.withOpacity(0.5),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(12.0))
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$number',
+                style: TextStyle(
+                    color: Colors.white,
+                    //fontSize: 24,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/*
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +152,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 
 class CalculatorPage extends StatefulWidget {
   @override
@@ -136,6 +271,8 @@ class _CalculatorPageState extends State<CalculatorPage> {
     );
   }
 }
+
+
 class CustomButton extends StatelessWidget {
   String text;
 
@@ -159,4 +296,4 @@ class CustomButton extends StatelessWidget {
     );
   }
 }
-
+*/
