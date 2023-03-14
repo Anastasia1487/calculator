@@ -1,0 +1,15 @@
+{
+  "calculator": "Калькулятор",
+  "copy": "Копировать",
+  "paste": "Вставить",
+  "mode": "Режим",
+  "basic": "Базовый",
+  "advanced": "Расширенный",
+  "design_theme": "Темы оформления",
+  "light_theme": "Светлая тема",
+  "dark_theme": "Тёмная тема",
+  "children_theme": "Детская тема",
+  "help": "Справка",
+  "reference": "Справка",
+  "about_program": "О программе"
+}
