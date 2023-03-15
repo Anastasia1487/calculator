@@ -1,7 +1,21 @@
+import 'package:calculator/generated/codegen_loader.g.dart';
+import 'package:calculator/generated/locale_keys.g.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalization.ensureInitialized();
+
+  runApp(
+    EasyLocalization(
+        supportedLocales: [Locale('en'), Locale('ru')],
+        path: 'assets/translations', // <-- change the path of the translation files
+        fallbackLocale: Locale('ru'),
+        assetLoader: const CodegenLoader(),
+        child: MyApp()
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,7 +25,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      localizationsDelegates: context.localizationDelegates,
+      supportedLocales: context.supportedLocales,
+      locale: context.locale,
+      title: 'Calculator',
+
       theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
       home: const GridCount(),
     );
@@ -27,11 +45,24 @@ class GridCount extends StatefulWidget {
 
 class _GridCountState extends State<GridCount> {
   final controller = TextEditingController();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('GridView Demo')),
+      appBar: AppBar(
+        title: const Text(LocaleKeys.calculator.tr()),
+
+        leading: TextButton(
+
+          child: Text(context.locale == Locale('ru') ? 'ru' : 'en'),
+          onPressed: () {
+            if (context.locale == Locale('ru')) {
+              context.setLocale(Locale('en'));
+            } else {
+              context.setLocale(Locale('ru'));
+            }
+          },
+        ),
+      ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
