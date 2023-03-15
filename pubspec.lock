@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
+  evaluate:
+    dependency: "direct main"
+    description:
+      name: evaluate
+      sha256: "50dcdfeeff6deb6cab1fb125c635d965be247ec528fb2712688f41a121b77ff8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.1"
   fake_async:
     dependency: transitive
     description:
