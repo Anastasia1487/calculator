@@ -2,19 +2,28 @@ import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:function_tree/function_tree.dart';
+import 'package:desktop_window/desktop_window.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  await windowManager.ensureInitialized();
+  final temp = await windowManager.getSize();
+  Size size = Size(416, temp.height);
+  windowManager.setSize(size);
+  windowManager.setMaximumSize(size);
+  windowManager.setMinimumSize(size);
 
   runApp(
     EasyLocalization(
-        supportedLocales: [Locale('en'), Locale('ru')],
-        path: 'assets/translations', // <-- change the path of the translation files
-        fallbackLocale: Locale('ru'),
+        supportedLocales: const [Locale('en'), Locale('ru')],
+        path: 'assets/translations',
+        // <-- change the path of the translation files
+        fallbackLocale: const Locale('ru'),
         assetLoader: const CodegenLoader(),
-        child: MyApp()
-    ),
+        child: const MyApp()),
   );
 }
 
@@ -25,11 +34,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Calculator',
-
       theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
       home: const GridCount(),
     );
@@ -45,22 +54,81 @@ class GridCount extends StatefulWidget {
 
 class _GridCountState extends State<GridCount> {
   final controller = TextEditingController();
+  final focus = FocusNode();
+
+  bool isExtended = false;
+
+  void eval() {
+    controller.text = controller.text.interpret().toString();
+  }
+
+  void addText(String text) {
+    controller.text += text;
+  }
+
+  void focusOnBack({int? value}) {
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: controller.text.length - (value ?? 1)),
+    );
+    focus.requestFocus();
+  }
+
+  Future<void> setSize(double width) async {
+    final temp = await DesktopWindow.getWindowSize();
+    final height = temp.height;
+    final size = Size(width, height);
+    windowManager.setMaximumSize(size);
+    windowManager.setMinimumSize(size);
+    windowManager.setSize(size);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(LocaleKeys.calculator.tr()),
-
-        leading: TextButton(
-
-          child: Text(context.locale == Locale('ru') ? 'ru' : 'en'),
-          onPressed: () {
-            if (context.locale == Locale('ru')) {
-              context.setLocale(Locale('en'));
-            } else {
-              context.setLocale(Locale('ru'));
-            }
-          },
+        title: Text(LocaleKeys.calculator.tr()),
+        actions: [
+          TextButton(
+            child: Text(context.locale == const Locale('ru') ? 'ru' : 'en'),
+            onPressed: () {
+              if (context.locale == const Locale('ru')) {
+                context.setLocale(const Locale('en'));
+              } else {
+                context.setLocale(const Locale('ru'));
+              }
+            },
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            ExpansionTile(
+              title: const Text('Режим'),
+              children: [
+                ListTile(
+                  title: const Text('Базовый'),
+                  textColor: !isExtended ? Colors.green : null,
+                  onTap: () {
+                    setState(() {
+                      isExtended = false;
+                      setSize(416);
+                    });
+                  },
+                ),
+                ListTile(
+                  title: const Text('Расширенный'),
+                  textColor: isExtended ? Colors.green : null,
+                  onTap: () {
+                    setState(() {
+                      isExtended = true;
+                      setSize(816);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       body: Column(
@@ -73,81 +141,293 @@ class _GridCountState extends State<GridCount> {
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
               controller: controller,
+              focusNode: focus,
+              autofocus: true,
               decoration: const InputDecoration(),
             ),
           ),
           const SizedBox(
             height: 40,
           ),
-          Center(
-            child: GridView.count(
-              crossAxisCount: 4,
-              crossAxisSpacing: 0,
-              shrinkWrap: true,
-              children: [
-                DialKey(
-                  number: '%',
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Visibility(
+                visible: isExtended,
+                child: SizedBox(
+                  width: 400,
+                  child: Center(
+                    child: GridView.count(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 0,
+                      shrinkWrap: true,
+                      children: [
+                        DialKey(
+                          number: 'sin',
+                          onTap: () {
+                            addText('sin()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'cos',
+                          onTap: () {
+                            addText('cos()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'sinh',
+                          onTap: () {
+                            addText('sinh()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'cosh',
+                          onTap: () {
+                            addText('cosh()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'ln',
+                          onTap: () {
+                            addText('ln()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: '8',
+                          onTap: () {
+                            controller.text += '8';
+                          },
+                        ),
+                        DialKey(
+                          number: '9',
+                          onTap: () {
+                            controller.text += '9';
+                          },
+                        ),
+                        DialKey(
+                          number: '*',
+                          onTap: () {
+                            eval();
+                            controller.text += '*';
+                          },
+                        ),
+                        DialKey(
+                          number: '4',
+                          onTap: () {
+                            controller.text += '4';
+                          },
+                        ),
+                        DialKey(
+                          number: '5',
+                          onTap: () {
+                            controller.text += '5';
+                          },
+                        ),
+                        DialKey(
+                          number: '6',
+                          onTap: () {
+                            controller.text += '6';
+                          },
+                        ),
+                        DialKey(
+                          number: '+',
+                          onTap: () {
+                            eval();
+                            controller.text += '+';
+                          },
+                        ),
+                        DialKey(
+                          number: '1',
+                          onTap: () {
+                            controller.text += '1';
+                          },
+                        ),
+                        DialKey(
+                          number: '2',
+                          onTap: () {
+                            controller.text += '2';
+                          },
+                        ),
+                        DialKey(
+                          number: '3',
+                          onTap: () {
+                            controller.text += '3';
+                          },
+                        ),
+                        DialKey(
+                          number: '-',
+                          onTap: () {
+                            eval();
+                            controller.text += '-';
+                          },
+                        ),
+                        DialKey(
+                          number: '+/-',
+                          onTap: () {
+                            controller.text += '0';
+                          },
+                        ),
+                        DialKey(
+                          number: '0',
+                          onTap: () {
+                            controller.text += '0';
+                          },
+                        ),
+                        const DialKey(
+                          number: '.',
+                        ),
+                        DialKey(
+                          number: '=',
+                          onTap: () {
+                            eval();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                DialKey(
-                  number: 'x^2',
+              ),
+              SizedBox(
+                width: 400,
+                child: Center(
+                  child: GridView.count(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 0,
+                    shrinkWrap: true,
+                    children: [
+                      DialKey(
+                        number: '%',
+                        onTap: () {
+                          print(double.parse(controller.text));
+                        },
+                      ),
+                      DialKey(
+                        number: 'x^2',
+                        onTap: () {
+                          controller.text += '^()';
+                          focusOnBack();
+                        },
+                      ),
+                      DialKey(
+                        number: 'sqrt(x)',
+                        onTap: () {
+                          controller.text += 'sqrt()';
+                          focusOnBack();
+                        },
+                      ),
+                      DialKey(
+                        number: '/',
+                        onTap: () {
+                          eval();
+                          controller.text += '/';
+                        },
+                      ),
+                      DialKey(
+                        number: '7',
+                        onTap: () {
+                          controller.text += '7';
+                        },
+                      ),
+                      DialKey(
+                        number: '8',
+                        onTap: () {
+                          controller.text += '8';
+                        },
+                      ),
+                      DialKey(
+                        number: '9',
+                        onTap: () {
+                          controller.text += '9';
+                        },
+                      ),
+                      DialKey(
+                        number: '*',
+                        onTap: () {
+                          eval();
+                          controller.text += '*';
+                        },
+                      ),
+                      DialKey(
+                        number: '4',
+                        onTap: () {
+                          controller.text += '4';
+                        },
+                      ),
+                      DialKey(
+                        number: '5',
+                        onTap: () {
+                          controller.text += '5';
+                        },
+                      ),
+                      DialKey(
+                        number: '6',
+                        onTap: () {
+                          controller.text += '6';
+                        },
+                      ),
+                      DialKey(
+                        number: '+',
+                        onTap: () {
+                          eval();
+                          controller.text += '+';
+                        },
+                      ),
+                      DialKey(
+                        number: '1',
+                        onTap: () {
+                          controller.text += '1';
+                        },
+                      ),
+                      DialKey(
+                        number: '2',
+                        onTap: () {
+                          controller.text += '2';
+                        },
+                      ),
+                      DialKey(
+                        number: '3',
+                        onTap: () {
+                          controller.text += '3';
+                        },
+                      ),
+                      DialKey(
+                        number: '-',
+                        onTap: () {
+                          eval();
+                          controller.text += '-';
+                        },
+                      ),
+                      DialKey(
+                        number: '+/-',
+                        onTap: () {
+                          controller.text += '0';
+                        },
+                      ),
+                      DialKey(
+                        number: '0',
+                        onTap: () {
+                          controller.text += '0';
+                        },
+                      ),
+                      const DialKey(
+                        number: '.',
+                      ),
+                      DialKey(
+                        number: '=',
+                        onTap: () {
+                          eval();
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-                DialKey(
-                  number: 'sqrt(x)',
-                ),
-                DialKey(
-                  number: '/',
-                ),
-                DialKey(
-                  number: '7',
-                ),
-                DialKey(
-                  number: '8',
-                ),
-                DialKey(
-                  number: '9',
-                ),
-                DialKey(
-                  number: '*',
-                ),
-                DialKey(
-                  number: '4',
-                ),
-                DialKey(
-                  number: '5',
-                ),
-                DialKey(
-                  number: '6',
-                ),
-                DialKey(
-                  number: '+',
-                ),
-                DialKey(
-                  number: '1',
-                ),
-                DialKey(
-                  number: '2',
-                ),
-                DialKey(
-                  number: '3',
-                ),
-                DialKey(
-                  number: '-',
-                ),
-                DialKey(
-                  number: '+/-',
-                ),
-                DialKey(
-                  number: '0',
-                ),
-                DialKey(
-                  number: ',',
-                ),
-                DialKey(
-                  number: '=',
-                  onTap: () {},
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           const Spacer()
         ],
@@ -168,21 +448,26 @@ class DialKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 80,
-      height: 80,
-      margin: const EdgeInsets.all(4),
-      child: FloatingActionButton(
-        onPressed: onTap,
-        backgroundColor: Colors.grey.withOpacity(0.5),
-        shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12.0))),
-        child: Text(
-          number,
-          style: const TextStyle(
-              color: Colors.white,
-              //fontSize: 24,
-              fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: 80,
+          height: 20,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white24,
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
         ),
       ),
     );
