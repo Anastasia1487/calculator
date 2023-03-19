@@ -2,133 +2,434 @@ import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:function_tree/function_tree.dart';
+import 'package:desktop_window/desktop_window.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
+  await windowManager.ensureInitialized();
+  final temp = await windowManager.getSize();
+  Size size = Size(416, temp.height);
+  windowManager.setSize(size);
+  windowManager.setMaximumSize(size);
+  windowManager.setMinimumSize(size);
 
   runApp(
     EasyLocalization(
-        supportedLocales: [Locale('en'), Locale('ru')],
-        path: 'assets/translations', // <-- change the path of the translation files
-        fallbackLocale: Locale('ru'),
+        supportedLocales: const [Locale('en'), Locale('ru')],
+        path: 'assets/translations',
+        // <-- change the path of the translation files
+        fallbackLocale: const Locale('ru'),
         assetLoader: const CodegenLoader(),
-        child: MyApp()
-    ),
+        child: const MyApp()),
   );
 }
 
-
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Calculator',
-
       theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
-      home: GridCount(),
+      home: const GridCount(),
     );
   }
 }
 
-class GridCount extends StatelessWidget {
+class GridCount extends StatefulWidget {
+  const GridCount({super.key});
+
+  @override
+  State<GridCount> createState() => _GridCountState();
+}
+
+class _GridCountState extends State<GridCount> {
+  final controller = TextEditingController();
+  final focus = FocusNode();
+
+  bool isExtended = false;
+
+  void eval() {
+    controller.text = controller.text.interpret().toString();
+  }
+
+  void addText(String text) {
+    controller.text += text;
+  }
+
+  void focusOnBack({int? value}) {
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: controller.text.length - (value ?? 1)),
+    );
+    focus.requestFocus();
+  }
+
+  Future<void> setSize(double width) async {
+    final temp = await DesktopWindow.getWindowSize();
+    final height = temp.height;
+    final size = Size(width, height);
+    windowManager.setMaximumSize(size);
+    windowManager.setMinimumSize(size);
+    windowManager.setSize(size);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(LocaleKeys.calculator.tr()),
-
-        leading: TextButton(
-
-          child: Text(context.locale == Locale('ru') ? 'ru' : 'en'),
-          onPressed: () {
-            if (context.locale == Locale('ru')) {
-              context.setLocale(Locale('en'));
-            } else {
-              context.setLocale(Locale('ru'));
-            }
-          },
+        actions: [
+          TextButton(
+            child: Text(context.locale == const Locale('ru') ? 'ru' : 'en'),
+            onPressed: () {
+              if (context.locale == const Locale('ru')) {
+                context.setLocale(const Locale('en'));
+              } else {
+                context.setLocale(const Locale('ru'));
+              }
+            },
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            ExpansionTile(
+              title: const Text('Режим'),
+              children: [
+                ListTile(
+                  title: const Text('Базовый'),
+                  textColor: !isExtended ? Colors.green : null,
+                  onTap: () {
+                    setState(() {
+                      isExtended = false;
+                      setSize(416);
+                    });
+                  },
+                ),
+                ListTile(
+                  title: const Text('Расширенный'),
+                  textColor: isExtended ? Colors.green : null,
+                  onTap: () {
+                    setState(() {
+                      isExtended = true;
+                      setSize(816);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
       ),
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Spacer(
-            flex: 5,
+          const SizedBox(
+            height: 20,
           ),
-          GridView.count(
-            crossAxisCount: 4,
-            crossAxisSpacing: 0,
-            shrinkWrap: true,
-            //padding: EdgeInsets.only(left: 2, right: 2),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: TextField(
+              controller: controller,
+              focusNode: focus,
+              autofocus: true,
+              decoration: const InputDecoration(),
+            ),
+          ),
+          const SizedBox(
+            height: 40,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              DialKey(
-                number: '%',
+              Visibility(
+                visible: isExtended,
+                child: SizedBox(
+                  width: 400,
+                  child: Center(
+                    child: GridView.count(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 0,
+                      shrinkWrap: true,
+                      children: [
+                        DialKey(
+                          number: 'sin',
+                          onTap: () {
+                            addText('sin()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'cos',
+                          onTap: () {
+                            addText('cos()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'sinh',
+                          onTap: () {
+                            addText('sinh()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'cosh',
+                          onTap: () {
+                            addText('cosh()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: 'ln',
+                          onTap: () {
+                            addText('ln()');
+                            focusOnBack();
+                          },
+                        ),
+                        DialKey(
+                          number: '8',
+                          onTap: () {
+                            controller.text += '8';
+                          },
+                        ),
+                        DialKey(
+                          number: '9',
+                          onTap: () {
+                            controller.text += '9';
+                          },
+                        ),
+                        DialKey(
+                          number: '*',
+                          onTap: () {
+                            eval();
+                            controller.text += '*';
+                          },
+                        ),
+                        DialKey(
+                          number: '4',
+                          onTap: () {
+                            controller.text += '4';
+                          },
+                        ),
+                        DialKey(
+                          number: '5',
+                          onTap: () {
+                            controller.text += '5';
+                          },
+                        ),
+                        DialKey(
+                          number: '6',
+                          onTap: () {
+                            controller.text += '6';
+                          },
+                        ),
+                        DialKey(
+                          number: '+',
+                          onTap: () {
+                            eval();
+                            controller.text += '+';
+                          },
+                        ),
+                        DialKey(
+                          number: '1',
+                          onTap: () {
+                            controller.text += '1';
+                          },
+                        ),
+                        DialKey(
+                          number: '2',
+                          onTap: () {
+                            controller.text += '2';
+                          },
+                        ),
+                        DialKey(
+                          number: '3',
+                          onTap: () {
+                            controller.text += '3';
+                          },
+                        ),
+                        DialKey(
+                          number: '-',
+                          onTap: () {
+                            eval();
+                            controller.text += '-';
+                          },
+                        ),
+                        DialKey(
+                          number: '+/-',
+                          onTap: () {
+                            controller.text += '0';
+                          },
+                        ),
+                        DialKey(
+                          number: '0',
+                          onTap: () {
+                            controller.text += '0';
+                          },
+                        ),
+                        const DialKey(
+                          number: '.',
+                        ),
+                        DialKey(
+                          number: '=',
+                          onTap: () {
+                            eval();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              DialKey(
-                number: 'x^2',
-              ),
-              DialKey(
-                number: 'sqrt(x)',
-              ),
-              DialKey(
-                number: '/',
-              ),
-              DialKey(
-                number: '7',
-              ),
-              DialKey(
-                number: '8',
-              ),
-              DialKey(
-                number: '9',
-              ),
-              DialKey(
-                number: '*',
-              ),
-              DialKey(
-                number: '4',
-              ),
-              DialKey(
-                number: '5',
-              ),
-              DialKey(
-                number: '6',
-              ),
-              DialKey(
-                number: '+',
-              ),
-              DialKey(
-                number: '1',
-              ),
-              DialKey(
-                number: '2',
-              ),
-              DialKey(
-                number: '3',
-              ),
-              DialKey(
-                number: '-',
-              ),
-              DialKey(
-                number: '+/-',
-              ),
-              DialKey(
-                number: '0',
-              ),
-              DialKey(
-                number: ',',
-              ),
-              DialKey(
-                number: '=',
+              SizedBox(
+                width: 400,
+                child: Center(
+                  child: GridView.count(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 0,
+                    shrinkWrap: true,
+                    children: [
+                      DialKey(
+                        number: '%',
+                        onTap: () {
+                          print(double.parse(controller.text));
+                        },
+                      ),
+                      DialKey(
+                        number: 'x^2',
+                        onTap: () {
+                          controller.text += '^()';
+                          focusOnBack();
+                        },
+                      ),
+                      DialKey(
+                        number: 'sqrt(x)',
+                        onTap: () {
+                          controller.text += 'sqrt()';
+                          focusOnBack();
+                        },
+                      ),
+                      DialKey(
+                        number: '/',
+                        onTap: () {
+                          eval();
+                          controller.text += '/';
+                        },
+                      ),
+                      DialKey(
+                        number: '7',
+                        onTap: () {
+                          controller.text += '7';
+                        },
+                      ),
+                      DialKey(
+                        number: '8',
+                        onTap: () {
+                          controller.text += '8';
+                        },
+                      ),
+                      DialKey(
+                        number: '9',
+                        onTap: () {
+                          controller.text += '9';
+                        },
+                      ),
+                      DialKey(
+                        number: '*',
+                        onTap: () {
+                          eval();
+                          controller.text += '*';
+                        },
+                      ),
+                      DialKey(
+                        number: '4',
+                        onTap: () {
+                          controller.text += '4';
+                        },
+                      ),
+                      DialKey(
+                        number: '5',
+                        onTap: () {
+                          controller.text += '5';
+                        },
+                      ),
+                      DialKey(
+                        number: '6',
+                        onTap: () {
+                          controller.text += '6';
+                        },
+                      ),
+                      DialKey(
+                        number: '+',
+                        onTap: () {
+                          eval();
+                          controller.text += '+';
+                        },
+                      ),
+                      DialKey(
+                        number: '1',
+                        onTap: () {
+                          controller.text += '1';
+                        },
+                      ),
+                      DialKey(
+                        number: '2',
+                        onTap: () {
+                          controller.text += '2';
+                        },
+                      ),
+                      DialKey(
+                        number: '3',
+                        onTap: () {
+                          controller.text += '3';
+                        },
+                      ),
+                      DialKey(
+                        number: '-',
+                        onTap: () {
+                          eval();
+                          controller.text += '-';
+                        },
+                      ),
+                      DialKey(
+                        number: '+/-',
+                        onTap: () {
+                          controller.text += '0';
+                        },
+                      ),
+                      DialKey(
+                        number: '0',
+                        onTap: () {
+                          controller.text += '0';
+                        },
+                      ),
+                      const DialKey(
+                        number: '.',
+                      ),
+                      DialKey(
+                        number: '=',
+                        onTap: () {
+                          eval();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
-          Spacer()
+          const Spacer()
         ],
       ),
     );
@@ -137,197 +438,38 @@ class GridCount extends StatelessWidget {
 
 class DialKey extends StatelessWidget {
   final String number;
+  final VoidCallback? onTap;
 
-
-  DialKey({required this.number});
+  const DialKey({
+    super.key,
+    required this.number,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 80,
-        height: 80,
-        child: FloatingActionButton(
-          onPressed: () {},
-          backgroundColor: Colors.grey.withOpacity(0.5),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12.0))
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: 80,
+          height: 20,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white24,
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '$number',
-                style: TextStyle(
-                    color: Colors.white,
-                    //fontSize: 24,
-                    fontWeight: FontWeight.bold),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-
-/*
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Calculator',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: CalculatorPage(),
-    );
-  }
-}
-
-
-class CalculatorPage extends StatefulWidget {
-  @override
-  _CalculatorPageState createState() => new _CalculatorPageState();
-}
-
-class _CalculatorPageState extends State<CalculatorPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: new Container(
-        color: Colors.black,
-        child: new Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Flexible(
-              flex: 3,
-              child: new Container(color: Colors.black),
-            ),
-            Flexible(
-              flex: 5,
-              child: new Container(
-                height: double.infinity,
-                width: double.infinity,
-                color: Colors.black,
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Flexible(
-                      flex: 1,
-                      child: new Container (
-                        height: double.infinity,
-                        width: double.infinity,
-                        child: new Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(flex: 1, child: CustomButton("%")),
-                            Flexible(flex: 1, child: CustomButton("x^2")),
-                            Flexible(flex: 1, child: CustomButton("sqrt(x)")),
-                            Flexible(flex: 1, child: CustomButton("/")),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: new Container (
-                        height: double.infinity,
-                        width: double.infinity,
-                        child: new Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(flex: 1, child: CustomButton("7")),
-                            Flexible(flex: 1, child: CustomButton("8")),
-                            Flexible(flex: 1, child: CustomButton("9")),
-                            Flexible(flex: 1, child: CustomButton("*")),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: new Container (
-                        height: double.infinity,
-                        width: double.infinity,
-                        child: new Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(flex: 1, child: CustomButton("4")),
-                            Flexible(flex: 1, child: CustomButton("5")),
-                            Flexible(flex: 1, child: CustomButton("6")),
-                            Flexible(flex: 1, child: CustomButton("-")),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: new Container (
-                        height: double.infinity,
-                        width: double.infinity,
-                        child: new Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(flex: 1, child: CustomButton("1")),
-                            Flexible(flex: 1, child: CustomButton("2")),
-                            Flexible(flex: 1, child: CustomButton("3")),
-                            Flexible(flex: 1, child: CustomButton("+")),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Flexible(
-                      flex: 1,
-                      child: new Container (
-                        height: double.infinity,
-                        width: double.infinity,
-                        child: new Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Flexible(flex: 1, child: CustomButton("+/-")),
-                            Flexible(flex: 1, child: CustomButton("0")),
-                            Flexible(flex: 1, child: CustomButton(".")),
-                            Flexible(flex: 1, child: CustomButton("=")),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-class CustomButton extends StatelessWidget {
-  String text;
-
-  CustomButton(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return new Container(
-      margin: new EdgeInsets.all(6.0),
-      height: double.infinity,
-      width: double.infinity,
-      alignment: Alignment.center,
-      decoration: new BoxDecoration(
-        borderRadius: new BorderRadius.all(new Radius.circular(16.0)),
-        color: Colors.white24,
-      ),
-      child: new Text(
-        text,
-        style: new TextStyle(color: Colors.white, fontSize: 26.0),
-      ),
-    );
-  }
-}
-*/
