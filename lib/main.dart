@@ -4,7 +4,6 @@ void main() {
   runApp(new MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
@@ -16,6 +15,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
 class GridCount extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -104,7 +104,6 @@ class GridCount extends StatelessWidget {
 class DialKey extends StatelessWidget {
   final String number;
 
-
   DialKey({required this.number});
 
   @override
@@ -117,8 +116,7 @@ class DialKey extends StatelessWidget {
           onPressed: () {},
           backgroundColor: Colors.grey.withOpacity(0.5),
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(12.0))
-          ),
+              borderRadius: BorderRadius.all(Radius.circular(12.0))),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
