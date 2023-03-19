@@ -1,26 +1,29 @@
 import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:function_tree/function_tree.dart';
-import 'package:desktop_window/desktop_window.dart';
 import 'package:window_manager/window_manager.dart';
+
+double blockSize = 300;
+double height = 500;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  await windowManager.ensureInitialized();
-  final temp = await windowManager.getSize();
-  Size size = Size(416, temp.height);
-  windowManager.setSize(size);
-  windowManager.setMaximumSize(size);
-  windowManager.setMinimumSize(size);
+  if (!kIsWeb) {
+    await windowManager.ensureInitialized();
+    Size size = Size(blockSize + 16, height);
+    windowManager.setSize(size);
+    windowManager.setMaximumSize(size);
+    windowManager.setMinimumSize(size);
+  }
 
   runApp(
     EasyLocalization(
         supportedLocales: const [Locale('en'), Locale('ru')],
         path: 'assets/translations',
-        // <-- change the path of the translation files
         fallbackLocale: const Locale('ru'),
         assetLoader: const CodegenLoader(),
         child: const MyApp()),
@@ -58,28 +61,129 @@ class _GridCountState extends State<GridCount> {
 
   bool isExtended = false;
 
+  double spacing = 4;
+
+  String error = '';
+  String base = 'Base';
+
+  void toRadix(int i) {
+    eval();
+    final exp = RegExp(r'\d+');
+    final number =
+        exp.allMatches(controller.text).map((e) => e.group(0)).toList();
+
+    final first = int.parse(number.first!);
+    final second = int.parse(number.last!);
+    base = 'Base$i ${first.toRadixString(i)}';
+    setState(() {});
+    print(second);
+    print(first.toRadixString(i));
+    print(second.toRadixString(i));
+  }
+
   void eval() {
-    controller.text = controller.text.interpret().toString();
+    try {
+      controller.text = controller.text.interpret().toString();
+      error = '';
+    } catch (e) {
+      error = 'Неверное выражение';
+    }
+    setState(() {});
+    controller.selection = TextSelection(
+      baseOffset: controller.text.length,
+      extentOffset: controller.text.length,
+    );
+  }
+
+  void factor() {
+    String text = controller.text.substring(0, controller.selection.baseOffset);
+    final exp = RegExp(r'\d*\.?\d+');
+    final number = exp.allMatches(text).map((e) => e.group(0)).toList();
+
+    double last = double.parse(number.last ?? '0');
+
+    for (int i = 2; i < last; i++) {
+      last *= i;
+    }
+    final ratio = last;
+    text.substring(0, text.length - last.toString().length) + ratio.toString();
+
+    controller.text =
+        text + controller.text.substring(controller.selection.baseOffset);
+    controller.selection = TextSelection(
+      baseOffset: text.length,
+      extentOffset: text.length,
+    );
+    focus.requestFocus();
+  }
+
+  void percent() {
+    String text = controller.text.substring(0, controller.selection.baseOffset);
+    final exp = RegExp(r'\d*\.?\d+');
+    final number = exp.allMatches(text).map((e) => e.group(0)).toList();
+
+    final preLast = number[number.length - 2];
+    final percent = preLast != null ? double.parse(preLast) / 100 : 0.01;
+    final last = double.parse(number.last ?? '0');
+    int lasti = 0;
+    try {
+      lasti = int.parse(number.last ?? '0');
+    } catch (e) {
+      print(e);
+    }
+    final ratio = percent * last;
+    print(last.toString());
+    print(lasti.toString());
+    final dop = lasti == last ? 2 : 0;
+    print(lasti == last);
+    text = text.substring(0, text.length - last.toString().length + dop) +
+        ratio.toString();
+    print(text);
+    controller.text =
+        text + controller.text.substring(controller.selection.baseOffset);
+    controller.selection = TextSelection(
+      baseOffset: text.length,
+      extentOffset: text.length,
+    );
+    focus.requestFocus();
+    print(number);
+    print(last);
+    print(preLast);
+    print(ratio);
   }
 
   void addText(String text) {
-    controller.text += text;
+    final offset = controller.selection.base.offset;
+    offset >= 0
+        ? controller.text = controller.text.substring(0, offset) +
+            text +
+            controller.text.substring(offset)
+        : controller.text += text;
+
+    controller.selection = TextSelection(
+      baseOffset: offset + text.length,
+      extentOffset: offset + text.length,
+    );
+    focus.requestFocus();
   }
 
-  void focusOnBack({int? value}) {
+  void focusOnBack() {
+    final offset = controller.selection.base.offset;
+    final length = controller.text.length;
+
     controller.selection = TextSelection.fromPosition(
-      TextPosition(offset: controller.text.length - (value ?? 1)),
+      TextPosition(offset: offset >= 0 ? offset - 1 : length - 1),
     );
     focus.requestFocus();
   }
 
   Future<void> setSize(double width) async {
-    final temp = await DesktopWindow.getWindowSize();
-    final height = temp.height;
-    final size = Size(width, height);
-    windowManager.setMaximumSize(size);
-    windowManager.setMinimumSize(size);
-    windowManager.setSize(size);
+    if (!kIsWeb) {
+      final size = Size(width, height);
+      windowManager.setMaximumSize(size);
+      windowManager.setMinimumSize(size);
+      windowManager.setSize(size);
+    }
   }
 
   @override
@@ -103,6 +207,13 @@ class _GridCountState extends State<GridCount> {
       drawer: Drawer(
         child: ListView(
           children: [
+            ListTile(
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: const Text('Дополнительные возможности'),
+            ),
             ExpansionTile(
               title: const Text('Режим'),
               children: [
@@ -112,7 +223,8 @@ class _GridCountState extends State<GridCount> {
                   onTap: () {
                     setState(() {
                       isExtended = false;
-                      setSize(416);
+                      setSize(blockSize + 16);
+                      Navigator.pop(context);
                     });
                   },
                 ),
@@ -122,7 +234,8 @@ class _GridCountState extends State<GridCount> {
                   onTap: () {
                     setState(() {
                       isExtended = true;
-                      setSize(816);
+                      setSize(blockSize * 2 + 16);
+                      Navigator.pop(context);
                     });
                   },
                 ),
@@ -155,12 +268,11 @@ class _GridCountState extends State<GridCount> {
               Visibility(
                 visible: isExtended,
                 child: SizedBox(
-                  width: 400,
+                  width: blockSize,
                   child: Center(
-                    child: GridView.count(
-                      crossAxisCount: 4,
-                      crossAxisSpacing: 0,
-                      shrinkWrap: true,
+                    child: Wrap(
+                      spacing: spacing,
+                      runSpacing: spacing,
                       children: [
                         DialKey(
                           number: 'sin',
@@ -197,95 +309,64 @@ class _GridCountState extends State<GridCount> {
                             focusOnBack();
                           },
                         ),
-                        DialKey(
-                          number: '8',
-                          onTap: () {
-                            controller.text += '8';
-                          },
+                        Base(
+                          base: base,
                         ),
                         DialKey(
-                          number: '9',
+                          number: 'lg',
                           onTap: () {
-                            controller.text += '9';
-                          },
-                        ),
-                        DialKey(
-                          number: '*',
-                          onTap: () {
-                            eval();
-                            controller.text += '*';
-                          },
-                        ),
-                        DialKey(
-                          number: '4',
-                          onTap: () {
-                            controller.text += '4';
-                          },
-                        ),
-                        DialKey(
-                          number: '5',
-                          onTap: () {
-                            controller.text += '5';
-                          },
-                        ),
-                        DialKey(
-                          number: '6',
-                          onTap: () {
-                            controller.text += '6';
-                          },
-                        ),
-                        DialKey(
-                          number: '+',
-                          onTap: () {
-                            eval();
-                            controller.text += '+';
-                          },
-                        ),
-                        DialKey(
-                          number: '1',
-                          onTap: () {
-                            controller.text += '1';
+                            addText('log(10,)');
+                            focusOnBack();
                           },
                         ),
                         DialKey(
                           number: '2',
-                          onTap: () {
-                            controller.text += '2';
-                          },
+                          onTap: () => toRadix(2),
                         ),
                         DialKey(
                           number: '3',
+                          onTap: () => toRadix(3),
+                        ),
+                        DialKey(
+                          number: '4',
+                          onTap: () => toRadix(4),
+                        ),
+                        DialKey(
+                          number: 'abs',
                           onTap: () {
-                            controller.text += '3';
+                            addText('abs()');
+                            focusOnBack();
                           },
                         ),
                         DialKey(
-                          number: '-',
+                          number: '5',
+                          onTap: () => toRadix(5),
+                        ),
+                        DialKey(
+                          number: '6',
+                          onTap: () => toRadix(6),
+                        ),
+                        DialKey(
+                          number: '7',
+                          onTap: () => toRadix(7),
+                        ),
+                        DialKey(
+                          number: '!',
                           onTap: () {
-                            eval();
-                            controller.text += '-';
+                            factor();
                           },
                         ),
                         DialKey(
-                          number: '+/-',
-                          onTap: () {
-                            controller.text += '0';
-                          },
+                          number: '8',
+                          onTap: () => toRadix(8),
                         ),
                         DialKey(
-                          number: '0',
-                          onTap: () {
-                            controller.text += '0';
-                          },
-                        ),
-                        const DialKey(
-                          number: '.',
+                          number: '9',
+                          onTap: () => toRadix(9),
                         ),
                         DialKey(
-                          number: '=',
-                          onTap: () {
-                            eval();
-                          },
+                          number: '10',
+                          onTap: () => toRadix(10),
                         ),
                       ],
                     ),
@@ -293,125 +374,120 @@ class _GridCountState extends State<GridCount> {
                 ),
               ),
               SizedBox(
-                width: 400,
+                width: blockSize,
                 child: Center(
-                  child: GridView.count(
-                    crossAxisCount: 4,
-                    crossAxisSpacing: 0,
-                    shrinkWrap: true,
+                  child: Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
                     children: [
                       DialKey(
                         number: '%',
                         onTap: () {
-                          print(double.parse(controller.text));
+                          percent();
                         },
                       ),
                       DialKey(
-                        number: 'x^2',
+                        number: 'x²',
                         onTap: () {
-                          controller.text += '^()';
-                          focusOnBack();
+                          addText('^(2)');
                         },
                       ),
                       DialKey(
-                        number: 'sqrt(x)',
+                        number: '√',
                         onTap: () {
-                          controller.text += 'sqrt()';
+                          addText('sqrt()');
                           focusOnBack();
                         },
                       ),
                       DialKey(
                         number: '/',
                         onTap: () {
-                          eval();
-                          controller.text += '/';
+                          addText('/');
                         },
                       ),
                       DialKey(
                         number: '7',
                         onTap: () {
-                          controller.text += '7';
+                          addText('7');
                         },
                       ),
                       DialKey(
                         number: '8',
                         onTap: () {
-                          controller.text += '8';
+                          addText('8');
                         },
                       ),
                       DialKey(
                         number: '9',
                         onTap: () {
-                          controller.text += '9';
+                          addText('9');
                         },
                       ),
                       DialKey(
                         number: '*',
                         onTap: () {
-                          eval();
-                          controller.text += '*';
+                          addText('*');
                         },
                       ),
                       DialKey(
                         number: '4',
                         onTap: () {
-                          controller.text += '4';
+                          addText('4');
                         },
                       ),
                       DialKey(
                         number: '5',
                         onTap: () {
-                          controller.text += '5';
+                          addText('5');
                         },
                       ),
                       DialKey(
                         number: '6',
                         onTap: () {
-                          controller.text += '6';
+                          addText('6');
                         },
                       ),
                       DialKey(
                         number: '+',
                         onTap: () {
-                          eval();
-                          controller.text += '+';
+                          addText('+');
                         },
                       ),
                       DialKey(
                         number: '1',
                         onTap: () {
-                          controller.text += '1';
+                          addText('1');
                         },
                       ),
                       DialKey(
                         number: '2',
                         onTap: () {
-                          controller.text += '2';
+                          addText('2');
                         },
                       ),
                       DialKey(
                         number: '3',
                         onTap: () {
-                          controller.text += '3';
+                          addText('3');
                         },
                       ),
                       DialKey(
                         number: '-',
                         onTap: () {
-                          eval();
-                          controller.text += '-';
+                          addText('-');
                         },
                       ),
                       DialKey(
                         number: '+/-',
                         onTap: () {
-                          controller.text += '0';
+                          controller.text = '-(${controller.text})';
+                          focus.requestFocus();
                         },
                       ),
                       DialKey(
                         number: '0',
                         onTap: () {
-                          controller.text += '0';
+                          addText('0');
                         },
                       ),
                       const DialKey(
@@ -436,6 +512,36 @@ class _GridCountState extends State<GridCount> {
   }
 }
 
+class Base extends StatelessWidget {
+  const Base({
+    Key? key,
+    required this.base,
+  }) : super(key: key);
+
+  final String base;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 50,
+      width: 218,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(4),
+        color: Colors.white24,
+      ),
+      child: Center(
+        child: Text(
+          base,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class DialKey extends StatelessWidget {
   final String number;
   final VoidCallback? onTap;
@@ -448,24 +554,21 @@ class DialKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(4.0),
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          width: 80,
-          height: 20,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.white24,
-          ),
-          child: Center(
-            child: Text(
-              number,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 70,
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          color: Colors.white24,
+        ),
+        child: Center(
+          child: Text(
+            number,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

@@ -38,7 +38,6 @@ dependencies:
 
   easy_localization: ^3.0.1
   function_tree: ^0.8.13
-  desktop_window: ^0.4.0
   window_manager: ^0.3.1
 
 dev_dependencies:

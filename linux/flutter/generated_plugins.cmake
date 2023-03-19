@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  desktop_window
   flutter_localization
   screen_retriever
   window_manager
