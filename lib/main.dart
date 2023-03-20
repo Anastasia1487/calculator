@@ -1,10 +1,14 @@
 import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
+import 'package:calculator/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:function_tree/function_tree.dart';
 import 'package:desktop_window/desktop_window.dart';
 import 'package:window_manager/window_manager.dart';
+
+import 'config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,29 +21,32 @@ void main() async {
   windowManager.setMinimumSize(size);
 
   runApp(
-    EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('ru')],
-        path: 'assets/translations',
-        // <-- change the path of the translation files
-        fallbackLocale: const Locale('ru'),
-        assetLoader: const CodegenLoader(),
-        child: const MyApp()),
+    ProviderScope(
+      child: EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ru')],
+          path: 'assets/translations',
+          // <-- change the path of the translation files
+          fallbackLocale: const Locale('ru'),
+          assetLoader: const CodegenLoader(),
+          child: const MyApp()),
+    ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Calculator',
-      theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
+      theme: ref.watch(themeProvider),
+      themeMode: currentTheme.currentTheme,
       home: const GridCount(),
     );
   }
@@ -463,7 +470,6 @@ class DialKey extends StatelessWidget {
             child: Text(
               number,
               style: const TextStyle(
-                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),

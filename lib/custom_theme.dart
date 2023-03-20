@@ -6,8 +6,8 @@ class CustomTheme with ChangeNotifier {
   static ThemeData get lightTheme {
     return ThemeData(
       primaryColor: CustomColors.lightThemeMenu,
-      scaffoldBackgroundColor: Colors.white,
-      fontFamily: 'Montserrat',
+      scaffoldBackgroundColor: Colors.red,
+      textTheme: TextTheme(bodyText2: TextStyle(color: Colors.cyan)),
       buttonTheme: ButtonThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18.0),
@@ -21,7 +21,6 @@ class CustomTheme with ChangeNotifier {
     return ThemeData(
       primaryColor: CustomColors.darkThemeMenu,
       scaffoldBackgroundColor: Colors.grey,
-      fontFamily: 'Montserrat',
       textTheme: ThemeData.dark().textTheme,
       buttonTheme: ButtonThemeData(
         shape: RoundedRectangleBorder(
@@ -36,7 +35,6 @@ class CustomTheme with ChangeNotifier {
     return ThemeData(
       primaryColor: CustomColors.warmThemeMenu,
       scaffoldBackgroundColor: Colors.greenAccent,
-      fontFamily: 'Montserrat',
       textTheme: ThemeData.dark().textTheme,
       buttonTheme: ButtonThemeData(
         shape: RoundedRectangleBorder(
