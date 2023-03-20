@@ -80,6 +80,15 @@ class _GridCountState extends State<GridCount> {
     focus.requestFocus();
   }
 
+  void openHelp() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SecondScreen()));
+  }
+
+  void openAbout() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ThirdScreen()));
+  }
   Future<void> setSize(double width) async {
     final temp = await DesktopWindow.getWindowSize();
     final height = temp.height;
@@ -111,10 +120,10 @@ class _GridCountState extends State<GridCount> {
         child: ListView(
           children: [
             ExpansionTile(
-              title: const Text('Режим'),
+              title: Text(LocaleKeys.mode.tr()),
               children: [
                 ListTile(
-                  title: const Text('Базовый'),
+                  title: Text(LocaleKeys.basic.tr()),
                   textColor: !isExtended ? Colors.green : null,
                   onTap: () {
                     setState(() {
@@ -124,7 +133,7 @@ class _GridCountState extends State<GridCount> {
                   },
                 ),
                 ListTile(
-                  title: const Text('Расширенный'),
+                  title:Text(LocaleKeys.advanced.tr()),
                   textColor: isExtended ? Colors.green : null,
                   onTap: () {
                     setState(() {
@@ -132,6 +141,49 @@ class _GridCountState extends State<GridCount> {
                       setSize(816);
                     });
                   },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              title: Text(LocaleKeys.calculator.tr()),
+              children: [
+                ListTile(
+                  title: Text(LocaleKeys.copy.tr()),
+                  onTap: () {},
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.paste.tr()),
+                  onTap: () {},
+                ),
+              ],
+            ),
+            ExpansionTile(
+              title: Text(LocaleKeys.design_theme.tr()),
+              children: [
+                ListTile(
+                  title: Text(LocaleKeys.light_theme.tr()),
+                  onTap: () {},
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.dark_theme.tr()),
+                  onTap: () {},
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.children_theme.tr()),
+                  onTap: () {},
+                ),
+              ],
+            ),
+            ExpansionTile(
+              title: Text(LocaleKeys.help.tr()),
+              children: [
+                ListTile(
+                  title: Text(LocaleKeys.reference.tr()),
+                  onTap: () => openHelp(),
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.about_program.tr()),
+                  onTap: () => openAbout(),
                 ),
               ],
             ),
@@ -475,6 +527,32 @@ class DialKey extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class SecondScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(LocaleKeys.reference.tr())),
+      body: Align(
+          alignment: Alignment.topCenter,
+          child: Text(LocaleKeys.reference_text.tr())
+      ),
+    );
+  }
+}
+
+class ThirdScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(LocaleKeys.about_program.tr())),
+      body: Align(
+          alignment: Alignment.topCenter,
+          child: Text(LocaleKeys.about_program_text.tr())
       ),
     );
   }
