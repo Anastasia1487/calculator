@@ -52,14 +52,14 @@ class MyApp extends ConsumerWidget {
   }
 }
 
-class GridCount extends StatefulWidget {
+class GridCount extends ConsumerStatefulWidget {
   const GridCount({super.key});
 
   @override
-  State<GridCount> createState() => _GridCountState();
+  ConsumerState<GridCount> createState() => _GridCountState();
 }
 
-class _GridCountState extends State<GridCount> {
+class _GridCountState extends ConsumerState<GridCount> {
   final controller = TextEditingController();
   final focus = FocusNode();
 
@@ -162,15 +162,15 @@ class _GridCountState extends State<GridCount> {
               children: [
                 ListTile(
                   title: Text(LocaleKeys.light_theme.tr()),
-                  onTap: () {},
+                  onTap: () => ref.read(themeProvider.notifier).setLight(),
                 ),
                 ListTile(
                   title: Text(LocaleKeys.dark_theme.tr()),
-                  onTap: () {},
+                  onTap: () =>  ref.read(themeProvider.notifier).setDark(),
                 ),
                 ListTile(
                   title: Text(LocaleKeys.children_theme.tr()),
-                  onTap: () {},
+                  onTap: () =>  ref.read(themeProvider.notifier).setWarm(),
                 ),
               ],
             ),
