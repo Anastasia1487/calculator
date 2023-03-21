@@ -1,10 +1,16 @@
+import 'package:calculator/custom_colors.dart';
 import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
+import 'package:calculator/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:function_tree/function_tree.dart';
 import 'package:window_manager/window_manager.dart';
+
+import 'config.dart';
 
 double blockSize = 300;
 double height = 500;
@@ -21,45 +27,75 @@ void main() async {
   }
 
   runApp(
-    EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('ru')],
-        path: 'assets/translations',
-        fallbackLocale: const Locale('ru'),
+    ProviderScope(
+      child: EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ru')],
+          path: 'assets/translations',
+          fallbackLocale: const Locale('ru'),
         assetLoader: const CodegenLoader(),
-        child: const MyApp()),
+        child: const MyApp()),),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Calculator',
-      theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
+      theme: ref.watch(themeProvider),
+      themeMode: currentTheme.currentTheme,
       home: const GridCount(),
     );
   }
 }
 
-class GridCount extends StatefulWidget {
+class GridCount extends ConsumerStatefulWidget {
   const GridCount({super.key});
 
   @override
-  State<GridCount> createState() => _GridCountState();
+  ConsumerState<GridCount> createState() => _GridCountState();
 }
 
-class _GridCountState extends State<GridCount> {
+class _GridCountState extends ConsumerState<GridCount> {
   final controller = TextEditingController();
   final focus = FocusNode();
 
   bool isExtended = false;
+
+  void copy() {
+    focus.requestFocus();
+    Clipboard.setData(
+      ClipboardData(
+        text: controller.text.substring(
+          controller.selection.start,
+          controller.selection.end,
+        ),
+      ),
+    );
+  }
+
+  Future<void> paste() async {
+    final offset = controller.selection.start;
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final inserted = data?.text ?? '';
+    final split = controller.text.split('');
+    split.insert(controller.selection.start, inserted);
+    controller.text = split.join();
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(
+        offset: offset + inserted.length,
+      ),
+    );
+    focus.requestFocus();
+  }
+
 
   double spacing = 4;
 
@@ -195,6 +231,15 @@ class _GridCountState extends State<GridCount> {
     focus.requestFocus();
   }
 
+  void openHelp() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => SecondScreen()));
+  }
+
+  void openAbout() {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ThirdScreen()));
+  }
   Future<void> setSize(double width) async {
     if (!kIsWeb) {
       final size = Size(width, height);
@@ -206,12 +251,23 @@ class _GridCountState extends State<GridCount> {
 
   @override
   Widget build(BuildContext context) {
+
+    Color? color = Theme.of(context).textTheme.bodyText2?.color;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleKeys.calculator.tr()),
+        title: Text(
+            style: TextStyle(
+              color: color,
+            ),
+            LocaleKeys.calculator.tr()),
         actions: [
           TextButton(
-            child: Text(context.locale == const Locale('ru') ? 'ru' : 'en'),
+            child: Text(
+                style: TextStyle(
+                  color: color,
+                ),
+                context.locale == const Locale('ru') ? 'ru' : 'en'),
             onPressed: () {
               if (context.locale == const Locale('ru')) {
                 context.setLocale(const Locale('en'));
@@ -233,11 +289,11 @@ class _GridCountState extends State<GridCount> {
               title: const Text('Дополнительные возможности'),
             ),
             ExpansionTile(
-              title: const Text('Режим'),
+              title: Text(LocaleKeys.mode.tr()),
               children: [
                 ListTile(
-                  title: const Text('Базовый'),
-                  textColor: !isExtended ? Colors.green : null,
+                  title: Text(LocaleKeys.basic.tr()),
+                //  textColor: !isExtended ? CustomColors.selectedMenuItem : null,
                   onTap: () {
                     setState(() {
                       isExtended = false;
@@ -247,8 +303,8 @@ class _GridCountState extends State<GridCount> {
                   },
                 ),
                 ListTile(
-                  title: const Text('Расширенный'),
-                  textColor: isExtended ? Colors.green : null,
+                  title:Text(LocaleKeys.advanced.tr()),
+                  //textColor: isExtended ? CustomColors.selectedMenuItem : null,
                   onTap: () {
                     setState(() {
                       isExtended = true;
@@ -256,6 +312,55 @@ class _GridCountState extends State<GridCount> {
                       Navigator.pop(context);
                     });
                   },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              title: Text(LocaleKeys.calculator.tr()),
+              children: [
+                ListTile(
+                  title: Text(LocaleKeys.copy.tr()),
+                  onTap: () {
+                    copy();
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.paste.tr()),
+                  onTap: () {
+                    paste();
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              title: Text(LocaleKeys.design_theme.tr()),
+              children: [
+                ListTile(
+                  title: Text(LocaleKeys.light_theme.tr()),
+                  onTap: () => ref.read(themeProvider.notifier).setLight(),
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.dark_theme.tr()),
+                  onTap: () =>  ref.read(themeProvider.notifier).setDark(),
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.children_theme.tr()),
+                  onTap: () =>  ref.read(themeProvider.notifier).setWarm(),
+                ),
+              ],
+            ),
+            ExpansionTile(
+              title: Text(LocaleKeys.help.tr()),
+              children: [
+                ListTile(
+                  title: Text(LocaleKeys.reference.tr()),
+                  onTap: () => openHelp(),
+                ),
+                ListTile(
+                  title: Text(LocaleKeys.about_program.tr()),
+                  onTap: () => openAbout(),
                 ),
               ],
             ),
@@ -271,10 +376,22 @@ class _GridCountState extends State<GridCount> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
+              cursorColor: Theme.of(context).buttonColor,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyText2?.color,
+                fontSize: 20,
+              ),
               controller: controller,
               focusNode: focus,
               autofocus: true,
-              decoration: const InputDecoration(),
+              decoration: InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+              ),
             ),
           ),
           const SizedBox(
@@ -572,6 +689,9 @@ class DialKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    Color color = Theme.of(context).primaryColor;
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -579,17 +699,43 @@ class DialKey extends StatelessWidget {
         height: 50,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
-          color: Colors.white24,
+          color: color,
         ),
         child: Center(
           child: Text(
             number,
             style: const TextStyle(
-              color: Colors.white,
+
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class SecondScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(LocaleKeys.reference.tr())),
+      body: Align(
+          alignment: Alignment.topCenter,
+          child: Text(LocaleKeys.reference_text.tr())
+      ),
+    );
+  }
+}
+
+class ThirdScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(LocaleKeys.about_program.tr())),
+      body: Align(
+          alignment: Alignment.topCenter,
+          child: Text(LocaleKeys.about_program_text.tr())
       ),
     );
   }
