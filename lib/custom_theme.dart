@@ -10,6 +10,9 @@ class CustomTheme with ChangeNotifier {
       canvasColor: CustomColors.lightThemeMenuBar,
       textTheme: TextTheme(bodyText2: TextStyle(color: Colors.black)),
       appBarTheme: AppBarTheme(
+        iconTheme: IconThemeData(
+          color: Colors.black
+        ),
         backgroundColor: Colors.blue,
         // color: Colors.white,
       ),
@@ -22,6 +25,7 @@ class CustomTheme with ChangeNotifier {
           collapsedIconColor: Colors.black),
       listTileTheme: ListTileThemeData(textColor: Colors.black),
       buttonColor: Colors.blue,
+
     );
   }
 
