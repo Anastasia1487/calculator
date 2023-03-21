@@ -20,4 +20,6 @@ class ThemeNotifier extends StateNotifier<ThemeData> {
   void setWarm() {
     state = CustomTheme.warmTheme;
   }
+
+  bool get isWarm => state == CustomTheme.warmTheme;
 }

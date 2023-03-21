@@ -8,11 +8,9 @@ class CustomTheme with ChangeNotifier {
       primaryColor: CustomColors.lightThemeMenu,
       scaffoldBackgroundColor: CustomColors.lightThemeMainBody,
       canvasColor: CustomColors.lightThemeMenuBar,
-      textTheme: TextTheme(bodyText2: TextStyle(color: Colors.black)),
-      appBarTheme: AppBarTheme(
-        iconTheme: IconThemeData(
-          color: Colors.black
-        ),
+      textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.black)),
+      appBarTheme: const AppBarTheme(
+        iconTheme: IconThemeData(color: Colors.black),
         backgroundColor: Colors.blue,
         // color: Colors.white,
       ),
@@ -23,34 +21,29 @@ class CustomTheme with ChangeNotifier {
           collapsedTextColor: Colors.black,
           iconColor: Colors.black,
           collapsedIconColor: Colors.black),
-      listTileTheme: ListTileThemeData(textColor: Colors.black),
-      buttonColor: Colors.blue,
-
+      listTileTheme: const ListTileThemeData(textColor: Colors.black),
     );
   }
 
   static ThemeData get darkTheme {
     return ThemeData(
-        primaryColor: CustomColors.darkThemeMenu,
-        scaffoldBackgroundColor: Colors.grey,
-        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.white)),
-        canvasColor: CustomColors.darkThemeMenuBar,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black,
-          //  color: CustomColors.darkTextMenuBar,
-        ),
-        expansionTileTheme: const ExpansionTileThemeData(
-          backgroundColor: CustomColors.darkThemeMenu,
-          collapsedBackgroundColor: CustomColors.darkThemeMenu,
-          collapsedTextColor: CustomColors.darkTextMenuBar,
-          textColor: CustomColors.darkTextMenuBar,
-          collapsedIconColor: CustomColors.darkTextMenuBar,
-          iconColor: CustomColors.darkTextMenuBar,
-        ),
-        listTileTheme:
-            ListTileThemeData(textColor: CustomColors.darkTextMenuBar),
-      buttonColor: Colors.black,
-
+      primaryColor: CustomColors.darkThemeMenu,
+      scaffoldBackgroundColor: Colors.grey,
+      textTheme: const TextTheme(bodyMedium: TextStyle(color: Colors.white)),
+      canvasColor: CustomColors.darkThemeMenuBar,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.black,
+        //  color: CustomColors.darkTextMenuBar,
+      ),
+      expansionTileTheme: const ExpansionTileThemeData(
+        backgroundColor: CustomColors.darkThemeMenu,
+        collapsedBackgroundColor: CustomColors.darkThemeMenu,
+        collapsedTextColor: CustomColors.darkTextMenuBar,
+        textColor: CustomColors.darkTextMenuBar,
+        collapsedIconColor: CustomColors.darkTextMenuBar,
+        iconColor: CustomColors.darkTextMenuBar,
+      ),
+      listTileTheme: const ListTileThemeData(textColor: CustomColors.darkTextMenuBar),
     );
   }
 
@@ -58,12 +51,12 @@ class CustomTheme with ChangeNotifier {
     return ThemeData(
       primaryColor: CustomColors.warmThemeMenu,
       scaffoldBackgroundColor: Colors.lightGreen,
-      textTheme: TextTheme(
-        bodyText2: TextStyle(color: Colors.white),
+      textTheme: const TextTheme(
+        bodyMedium: TextStyle(color: Colors.white),
       ),
       canvasColor: Colors.white,
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: CustomColors.warmThemeMenu,
       ),
       expansionTileTheme: const ExpansionTileThemeData(
         backgroundColor: CustomColors.warmThemeMenu,
@@ -73,8 +66,7 @@ class CustomTheme with ChangeNotifier {
         collapsedIconColor: Colors.white,
         iconColor: Colors.white,
       ),
-      listTileTheme: ListTileThemeData(textColor: Colors.white),
-      buttonColor: Colors.deepOrange,
+      listTileTheme: const ListTileThemeData(textColor: Colors.white),
     );
   }
 

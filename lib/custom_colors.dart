@@ -11,7 +11,7 @@ class CustomColors{
   static const Color darkTextMenuBar = Color(0xFFBDBDBD);
 
 
-  static const Color warmThemeMenu = Color(0xFFFF8244);
+  static const Color warmThemeMenu = Color(0xFF357C23);
 
 
 
