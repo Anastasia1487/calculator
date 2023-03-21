@@ -5,25 +5,23 @@ import 'custom_colors.dart';
 class CustomTheme with ChangeNotifier {
   static ThemeData get lightTheme {
     return ThemeData(
-        primaryColor: CustomColors.lightThemeMenu,
-        scaffoldBackgroundColor: CustomColors.lightThemeMainBody,
-        canvasColor: CustomColors.lightThemeMenuBar,
-        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.blue)),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.blue,
-         // color: Colors.white,
-        ),
-        expansionTileTheme: const ExpansionTileThemeData(
-            backgroundColor: CustomColors.lightThemeMenu,
-            collapsedBackgroundColor: CustomColors.lightThemeMenu,
-            textColor: Colors.white,
-            collapsedTextColor: Colors.white,
-            iconColor: Colors.white,
-            collapsedIconColor: Colors.white),
-        listTileTheme: ListTileThemeData(
-            textColor: Colors.white
-        )
-
+      primaryColor: CustomColors.lightThemeMenu,
+      scaffoldBackgroundColor: CustomColors.lightThemeMainBody,
+      canvasColor: CustomColors.lightThemeMenuBar,
+      textTheme: TextTheme(bodyText2: TextStyle(color: Colors.black)),
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.blue,
+        // color: Colors.white,
+      ),
+      expansionTileTheme: const ExpansionTileThemeData(
+          backgroundColor: CustomColors.lightThemeMenu,
+          collapsedBackgroundColor: CustomColors.lightThemeMenu,
+          textColor: Colors.black,
+          collapsedTextColor: Colors.black,
+          iconColor: Colors.black,
+          collapsedIconColor: Colors.black),
+      listTileTheme: ListTileThemeData(textColor: Colors.black),
+      buttonColor: Colors.blue,
     );
   }
 
@@ -35,7 +33,7 @@ class CustomTheme with ChangeNotifier {
         canvasColor: CustomColors.darkThemeMenuBar,
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
-        //  color: CustomColors.darkTextMenuBar,
+          //  color: CustomColors.darkTextMenuBar,
         ),
         expansionTileTheme: const ExpansionTileThemeData(
           backgroundColor: CustomColors.darkThemeMenu,
@@ -45,32 +43,34 @@ class CustomTheme with ChangeNotifier {
           collapsedIconColor: CustomColors.darkTextMenuBar,
           iconColor: CustomColors.darkTextMenuBar,
         ),
-        listTileTheme: ListTileThemeData(
-        textColor: CustomColors.darkTextMenuBar
-    )
+        listTileTheme:
+            ListTileThemeData(textColor: CustomColors.darkTextMenuBar),
+      buttonColor: Colors.black,
+
     );
   }
 
   static ThemeData get warmTheme {
     return ThemeData(
-        primaryColor: CustomColors.warmThemeMenu,
-        scaffoldBackgroundColor: Colors.greenAccent,
-        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.deepOrange)),
-        canvasColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.deepOrange,
-        ),
-        expansionTileTheme: const ExpansionTileThemeData(
-          backgroundColor: CustomColors.warmThemeMenu,
-          collapsedBackgroundColor: CustomColors.warmThemeMenu,
-          textColor: Colors.white,
-          collapsedTextColor: Colors.white,
-          collapsedIconColor: Colors.white,
-          iconColor: Colors.white,
-        ),
-        listTileTheme: ListTileThemeData(
-            textColor: Colors.white
-        ),
+      primaryColor: CustomColors.warmThemeMenu,
+      scaffoldBackgroundColor: Colors.greenAccent,
+      textTheme: TextTheme(
+        bodyText2: TextStyle(color: Colors.white),
+      ),
+      canvasColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.deepOrange,
+      ),
+      expansionTileTheme: const ExpansionTileThemeData(
+        backgroundColor: CustomColors.warmThemeMenu,
+        collapsedBackgroundColor: CustomColors.warmThemeMenu,
+        textColor: Colors.white,
+        collapsedTextColor: Colors.white,
+        collapsedIconColor: Colors.white,
+        iconColor: Colors.white,
+      ),
+      listTileTheme: ListTileThemeData(textColor: Colors.white),
+      buttonColor: Colors.white,
     );
   }
 

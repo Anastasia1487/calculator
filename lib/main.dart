@@ -4,6 +4,7 @@ import 'package:calculator/generated/locale_keys.g.dart';
 import 'package:calculator/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:function_tree/function_tree.dart';
 import 'package:desktop_window/desktop_window.dart';
@@ -66,6 +67,34 @@ class _GridCountState extends ConsumerState<GridCount> {
 
   bool isExtended = false;
 
+  void copy() {
+    focus.requestFocus();
+    Clipboard.setData(
+      ClipboardData(
+        text: controller.text.substring(
+          controller.selection.start,
+          controller.selection.end,
+        ),
+      ),
+    );
+  }
+
+  Future<void> paste() async {
+    final offset = controller.selection.start;
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final inserted = data?.text ?? '';
+    final split = controller.text.split('');
+    split.insert(controller.selection.start, inserted);
+    controller.text = split.join();
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(
+        offset: offset + inserted.length,
+      ),
+    );
+    focus.requestFocus();
+  }
+
+
   void eval() {
     controller.text = controller.text.interpret().toString();
   }
@@ -108,7 +137,7 @@ class _GridCountState extends ConsumerState<GridCount> {
           TextButton(
             child: Text(
                 style: TextStyle(
-                  color: Theme.of(context).primaryColor,
+                  color: Colors.white,
                 ),
                 context.locale == const Locale('ru') ? 'ru' : 'en'),
             onPressed: () {
@@ -154,11 +183,17 @@ class _GridCountState extends ConsumerState<GridCount> {
               children: [
                 ListTile(
                   title: Text(LocaleKeys.copy.tr()),
-                  onTap: () {},
+                  onTap: () {
+                    copy();
+                    Navigator.pop(context);
+                  },
                 ),
                 ListTile(
                   title: Text(LocaleKeys.paste.tr()),
-                  onTap: () {},
+                  onTap: () {
+                    paste();
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),
@@ -204,10 +239,22 @@ class _GridCountState extends ConsumerState<GridCount> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
+              cursorColor: Theme.of(context).buttonColor,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyText2?.color,
+                fontSize: 20,
+              ),
               controller: controller,
               focusNode: focus,
               autofocus: true,
-              decoration: const InputDecoration(),
+              decoration: InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+              ),
             ),
           ),
           const SizedBox(
@@ -512,6 +559,9 @@ class DialKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    Color color = Theme.of(context).primaryColor;
+
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: InkWell(
@@ -521,7 +571,7 @@ class DialKey extends StatelessWidget {
           height: 20,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: Colors.white24,
+            color: color,
           ),
           child: Center(
             child: Text(
