@@ -1,10 +1,16 @@
+import 'package:calculator/custom_colors.dart';
 import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
+import 'package:calculator/theme_provider.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:function_tree/function_tree.dart';
 import 'package:desktop_window/desktop_window.dart';
 import 'package:window_manager/window_manager.dart';
+
+import 'config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,46 +23,77 @@ void main() async {
   windowManager.setMinimumSize(size);
 
   runApp(
-    EasyLocalization(
-        supportedLocales: const [Locale('en'), Locale('ru')],
-        path: 'assets/translations',
-        // <-- change the path of the translation files
-        fallbackLocale: const Locale('ru'),
-        assetLoader: const CodegenLoader(),
-        child: const MyApp()),
+    ProviderScope(
+      child: EasyLocalization(
+          supportedLocales: const [Locale('en'), Locale('ru')],
+          path: 'assets/translations',
+          // <-- change the path of the translation files
+          fallbackLocale: const Locale('ru'),
+          assetLoader: const CodegenLoader(),
+          child: const MyApp()),
+    ),
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       localizationsDelegates: context.localizationDelegates,
       supportedLocales: context.supportedLocales,
       locale: context.locale,
       title: 'Calculator',
-      theme: ThemeData(primarySwatch: Colors.teal, brightness: Brightness.dark),
+      theme: ref.watch(themeProvider),
+      themeMode: currentTheme.currentTheme,
       home: const GridCount(),
     );
   }
 }
 
-class GridCount extends StatefulWidget {
+class GridCount extends ConsumerStatefulWidget {
   const GridCount({super.key});
 
   @override
-  State<GridCount> createState() => _GridCountState();
+  ConsumerState<GridCount> createState() => _GridCountState();
 }
 
-class _GridCountState extends State<GridCount> {
+class _GridCountState extends ConsumerState<GridCount> {
   final controller = TextEditingController();
   final focus = FocusNode();
 
   bool isExtended = false;
+
+  void copy() {
+    focus.requestFocus();
+    Clipboard.setData(
+      ClipboardData(
+        text: controller.text.substring(
+          controller.selection.start,
+          controller.selection.end,
+        ),
+      ),
+    );
+  }
+
+  Future<void> paste() async {
+    final offset = controller.selection.start;
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final inserted = data?.text ?? '';
+    final split = controller.text.split('');
+    split.insert(controller.selection.start, inserted);
+    controller.text = split.join();
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(
+        offset: offset + inserted.length,
+      ),
+    );
+    focus.requestFocus();
+  }
+
 
   void eval() {
     controller.text = controller.text.interpret().toString();
@@ -93,12 +130,23 @@ class _GridCountState extends State<GridCount> {
 
   @override
   Widget build(BuildContext context) {
+
+    Color? color = Theme.of(context).textTheme.bodyText2?.color;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleKeys.calculator.tr()),
+        title: Text(
+            style: TextStyle(
+              color: color,
+            ),
+            LocaleKeys.calculator.tr()),
         actions: [
           TextButton(
-            child: Text(context.locale == const Locale('ru') ? 'ru' : 'en'),
+            child: Text(
+                style: TextStyle(
+                  color: color,
+                ),
+                context.locale == const Locale('ru') ? 'ru' : 'en'),
             onPressed: () {
               if (context.locale == const Locale('ru')) {
                 context.setLocale(const Locale('en'));
@@ -117,7 +165,7 @@ class _GridCountState extends State<GridCount> {
               children: [
                 ListTile(
                   title: Text(LocaleKeys.basic.tr()),
-                  textColor: !isExtended ? Colors.green : null,
+                //  textColor: !isExtended ? CustomColors.selectedMenuItem : null,
                   onTap: () {
                     setState(() {
                       isExtended = false;
@@ -127,7 +175,7 @@ class _GridCountState extends State<GridCount> {
                 ),
                 ListTile(
                   title:Text(LocaleKeys.advanced.tr()),
-                  textColor: isExtended ? Colors.green : null,
+                  //textColor: isExtended ? CustomColors.selectedMenuItem : null,
                   onTap: () {
                     setState(() {
                       isExtended = true;
@@ -142,11 +190,17 @@ class _GridCountState extends State<GridCount> {
               children: [
                 ListTile(
                   title: Text(LocaleKeys.copy.tr()),
-                  onTap: () {},
+                  onTap: () {
+                    copy();
+                    Navigator.pop(context);
+                  },
                 ),
                 ListTile(
                   title: Text(LocaleKeys.paste.tr()),
-                  onTap: () {},
+                  onTap: () {
+                    paste();
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),
@@ -155,15 +209,15 @@ class _GridCountState extends State<GridCount> {
               children: [
                 ListTile(
                   title: Text(LocaleKeys.light_theme.tr()),
-                  onTap: () {},
+                  onTap: () => ref.read(themeProvider.notifier).setLight(),
                 ),
                 ListTile(
                   title: Text(LocaleKeys.dark_theme.tr()),
-                  onTap: () {},
+                  onTap: () =>  ref.read(themeProvider.notifier).setDark(),
                 ),
                 ListTile(
                   title: Text(LocaleKeys.children_theme.tr()),
-                  onTap: () {},
+                  onTap: () =>  ref.read(themeProvider.notifier).setWarm(),
                 ),
               ],
             ),
@@ -192,10 +246,22 @@ class _GridCountState extends State<GridCount> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: TextField(
+              cursorColor: Theme.of(context).buttonColor,
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyText2?.color,
+                fontSize: 20,
+              ),
               controller: controller,
               focusNode: focus,
               autofocus: true,
-              decoration: const InputDecoration(),
+              decoration: InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                ),
+              ),
             ),
           ),
           const SizedBox(
@@ -500,6 +566,9 @@ class DialKey extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    Color color = Theme.of(context).primaryColor;
+
     return Padding(
       padding: const EdgeInsets.all(4.0),
       child: InkWell(
@@ -509,13 +578,12 @@ class DialKey extends StatelessWidget {
           height: 20,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            color: Colors.white24,
+            color: color,
           ),
           child: Center(
             child: Text(
               number,
               style: const TextStyle(
-                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
