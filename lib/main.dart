@@ -1,3 +1,4 @@
+import 'package:calculator/custom_colors.dart';
 import 'package:calculator/generated/codegen_loader.g.dart';
 import 'package:calculator/generated/locale_keys.g.dart';
 import 'package:calculator/theme_provider.dart';
@@ -105,7 +106,11 @@ class _GridCountState extends ConsumerState<GridCount> {
         title: Text(LocaleKeys.calculator.tr()),
         actions: [
           TextButton(
-            child: Text(context.locale == const Locale('ru') ? 'ru' : 'en'),
+            child: Text(
+                style: TextStyle(
+                  color: Theme.of(context).primaryColor,
+                ),
+                context.locale == const Locale('ru') ? 'ru' : 'en'),
             onPressed: () {
               if (context.locale == const Locale('ru')) {
                 context.setLocale(const Locale('en'));
@@ -124,7 +129,7 @@ class _GridCountState extends ConsumerState<GridCount> {
               children: [
                 ListTile(
                   title: Text(LocaleKeys.basic.tr()),
-                  textColor: !isExtended ? Colors.green : null,
+                //  textColor: !isExtended ? CustomColors.selectedMenuItem : null,
                   onTap: () {
                     setState(() {
                       isExtended = false;
@@ -134,7 +139,7 @@ class _GridCountState extends ConsumerState<GridCount> {
                 ),
                 ListTile(
                   title:Text(LocaleKeys.advanced.tr()),
-                  textColor: isExtended ? Colors.green : null,
+                  //textColor: isExtended ? CustomColors.selectedMenuItem : null,
                   onTap: () {
                     setState(() {
                       isExtended = true;

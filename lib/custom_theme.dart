@@ -5,43 +5,72 @@ import 'custom_colors.dart';
 class CustomTheme with ChangeNotifier {
   static ThemeData get lightTheme {
     return ThemeData(
-      primaryColor: CustomColors.lightThemeMenu,
-      scaffoldBackgroundColor: Colors.red,
-      textTheme: TextTheme(bodyText2: TextStyle(color: Colors.cyan)),
-      buttonTheme: ButtonThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18.0),
+        primaryColor: CustomColors.lightThemeMenu,
+        scaffoldBackgroundColor: CustomColors.lightThemeMainBody,
+        canvasColor: CustomColors.lightThemeMenuBar,
+        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.blue)),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.blue,
+         // color: Colors.white,
         ),
-        buttonColor: Colors.purple,
-      ),
+        expansionTileTheme: const ExpansionTileThemeData(
+            backgroundColor: CustomColors.lightThemeMenu,
+            collapsedBackgroundColor: CustomColors.lightThemeMenu,
+            textColor: Colors.white,
+            collapsedTextColor: Colors.white,
+            iconColor: Colors.white,
+            collapsedIconColor: Colors.white),
+        listTileTheme: ListTileThemeData(
+            textColor: Colors.white
+        )
+
     );
   }
 
   static ThemeData get darkTheme {
     return ThemeData(
-      primaryColor: CustomColors.darkThemeMenu,
-      scaffoldBackgroundColor: Colors.grey,
-      textTheme: ThemeData.dark().textTheme,
-      buttonTheme: ButtonThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18.0),
+        primaryColor: CustomColors.darkThemeMenu,
+        scaffoldBackgroundColor: Colors.grey,
+        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.white)),
+        canvasColor: CustomColors.darkThemeMenuBar,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+        //  color: CustomColors.darkTextMenuBar,
         ),
-        buttonColor: Colors.grey,
-      ),
+        expansionTileTheme: const ExpansionTileThemeData(
+          backgroundColor: CustomColors.darkThemeMenu,
+          collapsedBackgroundColor: CustomColors.darkThemeMenu,
+          collapsedTextColor: CustomColors.darkTextMenuBar,
+          textColor: CustomColors.darkTextMenuBar,
+          collapsedIconColor: CustomColors.darkTextMenuBar,
+          iconColor: CustomColors.darkTextMenuBar,
+        ),
+        listTileTheme: ListTileThemeData(
+        textColor: CustomColors.darkTextMenuBar
+    )
     );
   }
 
   static ThemeData get warmTheme {
     return ThemeData(
-      primaryColor: CustomColors.warmThemeMenu,
-      scaffoldBackgroundColor: Colors.greenAccent,
-      textTheme: ThemeData.dark().textTheme,
-      buttonTheme: ButtonThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18.0),
+        primaryColor: CustomColors.warmThemeMenu,
+        scaffoldBackgroundColor: Colors.greenAccent,
+        textTheme: TextTheme(bodyText2: TextStyle(color: Colors.deepOrange)),
+        canvasColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.deepOrange,
         ),
-        buttonColor: Colors.green,
-      ),
+        expansionTileTheme: const ExpansionTileThemeData(
+          backgroundColor: CustomColors.warmThemeMenu,
+          collapsedBackgroundColor: CustomColors.warmThemeMenu,
+          textColor: Colors.white,
+          collapsedTextColor: Colors.white,
+          collapsedIconColor: Colors.white,
+          iconColor: Colors.white,
+        ),
+        listTileTheme: ListTileThemeData(
+            textColor: Colors.white
+        ),
     );
   }
 
