@@ -71,7 +71,6 @@ class _GridCountState extends State<GridCount> {
     final exp = RegExp(r'\d+');
     final number =
         exp.allMatches(controller.text).map((e) => e.group(0)).toList();
-
     final first = int.parse(number.first!);
     final second = int.parse(number.last!);
     base = 'Base$i ${first.toRadixString(i)}';
@@ -95,18 +94,27 @@ class _GridCountState extends State<GridCount> {
     );
   }
 
+
   void factor() {
     String text = controller.text.substring(0, controller.selection.baseOffset);
     final exp = RegExp(r'\d*\.?\d+');
     final number = exp.allMatches(text).map((e) => e.group(0)).toList();
-
+    print(number);
     double last = double.parse(number.last ?? '0');
-
-    for (int i = 2; i < last; i++) {
-      last *= i;
+    print(last);
+    final ratio = factorial(last.toInt());
+    int lasti = 0;
+    try {
+      lasti = int.parse(number.last ?? '0');
+    } catch (e) {
+      print(e);
     }
-    final ratio = last;
-    text.substring(0, text.length - last.toString().length) + ratio.toString();
+    print(ratio);
+    print(text.length);
+    final dop = lasti == last ? 2 : 0;
+
+    text = text.substring(0, text.length - last.toString().length + dop) + ratio.toString();
+    print(text);
 
     controller.text =
         text + controller.text.substring(controller.selection.baseOffset);
@@ -115,6 +123,14 @@ class _GridCountState extends State<GridCount> {
       extentOffset: text.length,
     );
     focus.requestFocus();
+  }
+
+  int factorial(int n) {
+    if (n <= 0) {
+      return 1;
+    } else {
+      return n * factorial(n - 1);
+    }
   }
 
   void percent() {
@@ -151,6 +167,8 @@ class _GridCountState extends State<GridCount> {
     print(preLast);
     print(ratio);
   }
+
+
 
   void addText(String text) {
     final offset = controller.selection.base.offset;
