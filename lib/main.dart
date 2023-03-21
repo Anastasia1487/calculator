@@ -130,14 +130,21 @@ class _GridCountState extends ConsumerState<GridCount> {
 
   @override
   Widget build(BuildContext context) {
+
+    Color? color = Theme.of(context).textTheme.bodyText2?.color;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(LocaleKeys.calculator.tr()),
+        title: Text(
+            style: TextStyle(
+              color: color,
+            ),
+            LocaleKeys.calculator.tr()),
         actions: [
           TextButton(
             child: Text(
                 style: TextStyle(
-                  color: Colors.white,
+                  color: color,
                 ),
                 context.locale == const Locale('ru') ? 'ru' : 'en'),
             onPressed: () {

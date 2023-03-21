@@ -53,7 +53,7 @@ class CustomTheme with ChangeNotifier {
   static ThemeData get warmTheme {
     return ThemeData(
       primaryColor: CustomColors.warmThemeMenu,
-      scaffoldBackgroundColor: Colors.greenAccent,
+      scaffoldBackgroundColor: Colors.lightGreen,
       textTheme: TextTheme(
         bodyText2: TextStyle(color: Colors.white),
       ),
@@ -70,7 +70,7 @@ class CustomTheme with ChangeNotifier {
         iconColor: Colors.white,
       ),
       listTileTheme: ListTileThemeData(textColor: Colors.white),
-      buttonColor: Colors.white,
+      buttonColor: Colors.deepOrange,
     );
   }
 
